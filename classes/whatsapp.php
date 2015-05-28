@@ -13,9 +13,12 @@ class Whatsapp
     private $_messages = array(); // list with messages
 
     private $_settings = array(
-        'wordLimit' => 1000,
+        'wordLimit' => 500,
         'wordLengthLimit' => 0,
-        'bannedWords' => array('someword', 'anotherword')
+        'multipliFactor' => 2.5, // Each word-size percent will be multiplied by this number. Play around with it to get best effect in combination with wordLimit and wordLengthLimit. 500 / 0 / 5 works good.
+        'minimumPercent' => 4,
+        'bannedWords' => array('someword', 'anotherword', 'media', 'weggelaten', 'de', 'het', 'een', 'die', 'dat', 'en'),
+        'sortBySize' => false // set to true to have big words in center and small words in outer circle
     );
 
     public function __construct($settings = array())
@@ -30,8 +33,9 @@ class Whatsapp
         if (is_file($filename)) {
 
             $lines = file($filename);
+            $count = 0;
             foreach ($lines as $i => $line) {
-
+                $count++;
                 if (preg_match($this->_matchLine, $line, $parts)) {
 
                     $name = $parts[3];
@@ -89,16 +93,18 @@ class Whatsapp
     }
 
     private function _fixBigCloud($wordCloud) {
-
-        $totalPercent = ($wordCloud[key($wordCloud)] / (count($wordCloud) / 15));
+        $hundredPercent = $wordCloud[key($wordCloud)];
         foreach ($wordCloud as $word => $count) {
-            $percent = round(100 / $totalPercent * $count);
-            if ($percent < 5) {
-                $percent = 5;
+            $percent = round(100 / $hundredPercent * $count, 3);
+            while ($percent < $this->_settings['minimumPercent']) {
+                $percent *= 10;
             }
+            $percent *= $this->_settings['multipliFactor'];
             $wordCloud[$word] = $percent;
         }
-        $this->ashuffle($wordCloud);
+        if ($this->_settings['sortBySize'] == false) {
+            $this->ashuffle($wordCloud);
+        }
         return $wordCloud;
 
     }
