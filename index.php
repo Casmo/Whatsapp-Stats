@@ -32,7 +32,7 @@ if (isset($_GET['module'])) {
     <div class="container-fluid">
         <a href="http://www.fellicht.nl" target="_blank" class="pull-right navbar-brand">Fellicht.nl</a>
         <div class="navbar-header">
-            <a class="navbar-brand" href="../whatsapp-stats%20-%20Copy">Home</a>
+            <a class="navbar-brand" href="index.php">Home</a>
             <?php
             if (is_file(CHAT_FILE)) {
                 ?>
