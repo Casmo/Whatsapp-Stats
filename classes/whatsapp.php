@@ -8,11 +8,14 @@ class Whatsapp
 {
     private $_words = array(); // word => count
     private $_names = array(); // name => count
+    private $_relations = array(); // name => [friends_name => count]. @see settings activityTime
+    private $_minutesNames = array(); // Timestamp => name
     private $_times = array('00' => 0, '01' => 0, '02' => 0, '03' => 0, '04' => 0, '05' => 0, '06' => 0, '07' => 0, '08' => 0, '09' => 0, '10' => 0,
         '11' => 0, '12' => 0, '13' => 0, '14' => 0, '15' => 0, '16' => 0, '17' => 0, '18' => 0, '19' => 0, '20' => 0, '21' => 0, '22' => 0, '23' => 0);
     private $_messages = array(); // list with messages
 
     private $_settings = array(
+        'activityTime' => 5, // Time in minutes for relations
         'wordLimit' => 500,
         'wordLengthLimit' => 0,
         'multipliFactor' => 2.5, // Each word-size percent will be multiplied by this number. Play around with it to get best effect in combination with wordLimit and wordLengthLimit. 500 / 0 / 5 works good.
@@ -40,9 +43,15 @@ class Whatsapp
 
                     $name = $parts[3];
                     $message = $parts[5];
-                    $date = $parts[1];
-                    preg_match('/([0-9]{2}):([0-9]{2})/', $date, $timeParts);
-                    $hour = $timeParts[1];
+                    $date = $parts[1]; // "26/11/2015, 18:17"
+                    preg_match('/([0-9]{2})\/([0-9]{2})\/([0-9]{4}), ([0-9]{2}):([0-9]{2})/', $date, $timeParts); // { [0]=> string(17) "26/11/2015, 18:17" [1]=> string(2) "26" [2]=> string(2) "11" [3]=> string(4) "2015" [4]=> string(2) "18" [5]=> string(2) "17" }
+                    $oDate = new DateTime($timeParts[3] .'-'. $timeParts[2] .'-'. $timeParts[1] .' '. $timeParts[4] .':'. $timeParts[5]);
+                    $timeInMinutes = floor($oDate->getTimestamp() / 60);
+                    if (!isset($this->_minutesNames[$timeInMinutes])) {
+                        $this->_minutesNames[$timeInMinutes] = [];
+                    }
+                    $this->_minutesNames[$timeInMinutes][] = $name;
+                    $hour = $timeParts[4];
                     $this->_times[$hour]++;
                     $cleanMessage = preg_replace('/[^[:space:]A-Z]+/i', '', strtolower($message));
                     $words = preg_split('/[[:space:]]+/', $cleanMessage);
@@ -107,6 +116,33 @@ class Whatsapp
         }
         return $wordCloud;
 
+    }
+
+    /**
+     * Get relations from everyone. Depending on the activity time
+     */
+    public function getRelations() {
+
+        //var_dump($this->_minutesNames);
+        foreach ($this->_minutesNames as $timestamp => $names) {
+            foreach ($names as $name) {
+                for ($i = ($timestamp - $this->_settings['activityTime']); $i <= $timestamp; $i++) {
+                    if (!isset($this->_minutesNames[$i])) {
+                        continue;
+                    }
+                    foreach ($this->_minutesNames[$i] as $friendName) {
+                        if ($name == $friendName) {
+                            continue;
+                        }
+                        if (!isset($this->_relations[$name][$friendName])) {
+                            $this->_relations[$name][$friendName] = 0;
+                        }
+                        $this->_relations[$name][$friendName]++;
+                    }
+                }
+            }
+        }
+        return $this->_relations;
     }
 
     /**

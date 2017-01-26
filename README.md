@@ -10,3 +10,4 @@ Create stats, wordclouds, and day statistics from Whatsapp group chats.
 * [wordcloud2.js](https://github.com/timdream/wordcloud2.js)
 * [Bootstrap](http://getbootstrap.com)
 * [chart.js](https://github.com/nnnick/Chart.js)
+* [randomColor.js](https://github.com/davidmerfield/randomColor)
