@@ -95,9 +95,6 @@ foreach ($list as $name => $friends) {
                 if (name.relations.hasOwnProperty(friendName)) {
                     for (var j = 0; j < names.length; j++) {
                         if (friendName == names[j].name) {
-                            if (name.name != "Fabien" && friendName != "Fabien") {
-//                                continue;
-                            }
                             var out = true;
                             if (connectionsMade[name.name] == null) {
                                 connectionsMade[name.name] = friendName;
