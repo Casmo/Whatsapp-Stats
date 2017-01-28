@@ -15,6 +15,7 @@ class Whatsapp
     private $_messages = array(); // list with messages
 
     private $_settings = array(
+        'iPhone' => false, // Set to true to fix some iPhone issues.
         'activityTime' => 5, // Time in minutes for relations
         'wordLimit' => 500,
         'wordLengthLimit' => 0,
@@ -29,7 +30,6 @@ class Whatsapp
         $this->_settings = array_merge($this->_settings, $settings);
     }
 
-    private $_iPhone = false;
     private $_matchLineIphone = '/([^A-Z]+)(: )([^:]+)(: )(.+)/i'; //  01-09-15 10:57:30: Dr Joe: Lorum ipsum
     private $_matchLine = '/([^-]+)( - )([^:]+)(: )(.+)/i'; // <date> - <name> : <message>
     private $_matchDate = '/([0-9]{2})\/([0-9]{2})\/([0-9]{4}), ([0-9]{2}):([0-9]{2})/';
@@ -38,12 +38,11 @@ class Whatsapp
     public function readFile($filename)
     {
         if (is_file($filename)) {
-
             $lines = file($filename);
             $count = 0;
             $match = $this->_matchLine;
             $dateMatch = $this->_matchDate;
-            if ($this->_iPhone) {
+            if ($this->_settings['iPhone']) {
                 $match = $this->_matchLineIphone;
                 $dateMatch = $this->_matchDateIphone;
             }
@@ -56,10 +55,10 @@ class Whatsapp
                     $date = $parts[1]; // "26/11/2015, 18:17"
                     // 01-09-15 09:25:51
                     preg_match($dateMatch, $date, $timeParts); // { [0]=> string(17) "26/11/2015, 18:17" [1]=> string(2) "26" [2]=> string(2) "11" [3]=> string(4) "2015" [4]=> string(2) "18" [5]=> string(2) "17" }
-                    if ($this->_iPhone) {
-                        $timeParts[3] = '20'. $timeParts[3];
+                    if ($this->_settings['iPhone']) {
+                        $timeParts[3] = '20' . $timeParts[3];
                     }
-                    $oDate = new DateTime($timeParts[3] .'-'. $timeParts[2] .'-'. $timeParts[1] .' '. $timeParts[4] .':'. $timeParts[5]);
+                    $oDate = new DateTime($timeParts[3] . '-' . $timeParts[2] . '-' . $timeParts[1] . ' ' . $timeParts[4] . ':' . $timeParts[5]);
                     $timeInMinutes = floor($oDate->getTimestamp() / 60);
                     if (!isset($this->_minutesNames[$timeInMinutes])) {
                         $this->_minutesNames[$timeInMinutes] = [];
@@ -115,7 +114,8 @@ class Whatsapp
         return $this->_words;
     }
 
-    private function _fixBigCloud($wordCloud) {
+    private function _fixBigCloud($wordCloud)
+    {
         $hundredPercent = $wordCloud[key($wordCloud)];
         foreach ($wordCloud as $word => $count) {
             $percent = round(100 / $hundredPercent * $count, 3);
@@ -135,7 +135,8 @@ class Whatsapp
     /**
      * Get relations from everyone. Depending on the activity time
      */
-    public function getRelations() {
+    public function getRelations()
+    {
 
         //var_dump($this->_minutesNames);
         foreach ($this->_minutesNames as $timestamp => $names) {

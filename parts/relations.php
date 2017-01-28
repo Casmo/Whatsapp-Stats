@@ -30,13 +30,13 @@ foreach ($list as $name => $friends) {
 
 <script>
     var heightest = <?php echo $heightest; ?>;
-    var maxFontSize = 60;
-    var maxLineSize = 1.5;
+    var maxFontSize = 30;
+    var maxLineSize = 2;
     var names = [];
     var connectionsMade = {};
     var canvas = document.getElementById('canvas');
-    canvas.width = (window.innerWidth * 1.5);
-    canvas.height = (window.innerWidth * 1.5); // Circle
+    canvas.width = 4000;//(window.innerWidth * 1);
+    canvas.height = 4000;//(window.innerWidth * 1); // Circle
     var ctx = canvas.getContext('2d');
     ctx.font = "18px 'Open Sans', Arial";
     ctx.fillStyle = "#000000";
@@ -53,8 +53,8 @@ foreach ($list as $name => $friends) {
     names.push({
         name: '<?php echo $name; ?>',
         relations: <?php echo json_encode($relations); ?>,
-        x: (centerX + radius * Math.cos(2 * Math.PI * stepI / steps)), // Math.floor(Math.random() * (canvas.width - 100)),
-        y: (centerY + radius * Math.sin(2 * Math.PI * stepI / steps)), //Math.floor(Math.random() * (canvas.height - 50)),
+        x: Math.random() * 150 + (centerX + radius * Math.cos(2 * Math.PI * stepI / steps)), // Math.floor(Math.random() * (canvas.width - 100)),
+        y: Math.random() * 150 + (centerY + radius * Math.sin(2 * Math.PI * stepI / steps)), //Math.floor(Math.random() * (canvas.height - 50)),
         color: randomColor({
             luminosity: 'dark',
             format: 'rgba',
@@ -91,24 +91,18 @@ foreach ($list as $name => $friends) {
             names[i].height = fontsize;
             ctx.fillStyle = name.color;
             ctx.fillText(name.name, name.x, name.y);
-            for (var friendName in name.relations) {
-                if (name.relations.hasOwnProperty(friendName)) {
+            for (var friend in name.relations) {
+                if (name.relations.hasOwnProperty(friend)) {
                     for (var j = 0; j < names.length; j++) {
-                        if (friendName == names[j].name) {
-                            var out = true;
-                            if (connectionsMade[name.name] == null) {
-                                connectionsMade[name.name] = friendName;
-                                out = false;
-                            }
-                            var amount = name.relations[friendName];
+                        if (friend == names[j].name) {
+                            var amount = name.relations[friend];
                             var friendX = names[j].x;
                             var friendY = names[j].y;
                             var size = 1 / max * amount;
-                                if (size < .3) {
-                                    size = .3;
-                                }
-
-                            var style = name.color.replace(", 1)", ", "+ size +")");
+                            if (size < .4) {
+                                size = .4;
+                            }
+                            var style = name.color.replace(", 1)", ", " + size + ")");
                             ctx.strokeStyle = style;
                             ctx.fillStyle = style;
                             var lineWith = maxLineSize * size;
@@ -126,14 +120,25 @@ foreach ($list as $name => $friends) {
                                 cpY2 = y - 150;
                             }
                             var t = 0.5; // given example value
-                            var fontX = (1 - t) * (1 - t) * x + 2 * (1 - t) * t * cpX + t * t * cpX2;
-                            var fontY = (1 - t) * (1 - t) * y + 2 * (1 - t) * t * cpY + t * t * cpY2;
-                            fontX += 5;
-                            fontY += 5;
-                            ctx.font = "14px 'Open Sans', Arial";
+//                            var fontX = (1 - t) * (1 - t) * x + 2 * (1 - t) * t * cpX + t * t * cpX2;
+//                            var fontY = (1 - t) * (1 - t) * y + 2 * (1 - t) * t * cpY + t * t * cpY2;
+                            var fontX = (x + friendX) / 2;
+                            var fontY = (y + friendY) / 2;
+                            if (connectionsMade[friend + '-' + name.name] != null) {
+                                fontX += 10;
+                                fontY += 10;
+                            }
+                            else {
+                                fontX -= 10;
+                                fontY -= 10;
+                            }
+//                            ctx.fillStyle = name.color;
+                            ctx.font = "10px 'Open Sans', Arial";
                             ctx.fillText(amount, fontX, fontY);
-                            ctx.bezierCurveTo(cpX, cpY, cpX2, cpY2, friendX, friendY);
+//                            ctx.bezierCurveTo(cpX, cpY, cpX2, cpY2, friendX, friendY);
+                            ctx.lineTo(friendX, friendY);
                             ctx.stroke();
+                            connectionsMade[name.name + '-' + friend] = true;
                         }
                     }
                 }
