@@ -29,7 +29,11 @@ class Whatsapp
         $this->_settings = array_merge($this->_settings, $settings);
     }
 
+    private $_iPhone = false;
+    private $_matchLineIphone = '/([^A-Z]+)(: )([^:]+)(: )(.+)/i'; //  01-09-15 10:57:30: Dr Joe: Lorum ipsum
     private $_matchLine = '/([^-]+)( - )([^:]+)(: )(.+)/i'; // <date> - <name> : <message>
+    private $_matchDate = '/([0-9]{2})\/([0-9]{2})\/([0-9]{4}), ([0-9]{2}):([0-9]{2})/';
+    private $_matchDateIphone = '/([0-9]{2})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})/';
 
     public function readFile($filename)
     {
@@ -37,14 +41,24 @@ class Whatsapp
 
             $lines = file($filename);
             $count = 0;
+            $match = $this->_matchLine;
+            $dateMatch = $this->_matchDate;
+            if ($this->_iPhone) {
+                $match = $this->_matchLineIphone;
+                $dateMatch = $this->_matchDateIphone;
+            }
             foreach ($lines as $i => $line) {
                 $count++;
-                if (preg_match($this->_matchLine, $line, $parts)) {
+                if (preg_match($match, $line, $parts)) {
 
                     $name = $parts[3];
                     $message = $parts[5];
                     $date = $parts[1]; // "26/11/2015, 18:17"
-                    preg_match('/([0-9]{2})\/([0-9]{2})\/([0-9]{4}), ([0-9]{2}):([0-9]{2})/', $date, $timeParts); // { [0]=> string(17) "26/11/2015, 18:17" [1]=> string(2) "26" [2]=> string(2) "11" [3]=> string(4) "2015" [4]=> string(2) "18" [5]=> string(2) "17" }
+                    // 01-09-15 09:25:51
+                    preg_match($dateMatch, $date, $timeParts); // { [0]=> string(17) "26/11/2015, 18:17" [1]=> string(2) "26" [2]=> string(2) "11" [3]=> string(4) "2015" [4]=> string(2) "18" [5]=> string(2) "17" }
+                    if ($this->_iPhone) {
+                        $timeParts[3] = '20'. $timeParts[3];
+                    }
                     $oDate = new DateTime($timeParts[3] .'-'. $timeParts[2] .'-'. $timeParts[1] .' '. $timeParts[4] .':'. $timeParts[5]);
                     $timeInMinutes = floor($oDate->getTimestamp() / 60);
                     if (!isset($this->_minutesNames[$timeInMinutes])) {
