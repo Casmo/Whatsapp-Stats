@@ -17,11 +17,11 @@ class Whatsapp
     private $_settings = array(
         'iPhone' => false, // Set to true to fix some iPhone issues.
         'activityTime' => 5, // Time in minutes for relations
-        'wordLimit' => 500,
+        'wordLimit' => 600,
         'wordLengthLimit' => 0,
         'multipliFactor' => 2.5, // Each word-size percent will be multiplied by this number. Play around with it to get best effect in combination with wordLimit and wordLengthLimit. 500 / 0 / 5 works good.
         'minimumPercent' => 4,
-        'bannedWords' => array('someword', 'anotherword', 'media', 'weggelaten', 'de', 'het', 'een', 'die', 'dat', 'en'),
+        'bannedWords' => array('media', 'omitted', 'someword', 'anotherword', 'media', 'weggelaten', 'de', 'het', 'een', 'die', 'dat', 'en'),
         'sortBySize' => false // set to true to have big words in center and small words in outer circle
     );
 
